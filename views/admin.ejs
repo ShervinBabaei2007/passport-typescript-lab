@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .admin-info {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .sessions-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .revoke-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .revoke-btn:hover {
+            background-color: #c82333;
+        }
+        .user-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .admin-badge {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .user-badge-normal {
+            background-color: #28a745;
+            color: white;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .warning strong {
+            color: #856404;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+
+    <div class="header">
+        <h1>🔐 Admin Dashboard</h1>
+        <div class="admin-info">Logged in as: <strong><%= user.name %></strong> (<%= user.email %>)</div>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Warning:</strong> Revoking a session will immediately log out that user. They will need to log in again to continue using the application.
+    </div>
+
+    <div class="sessions-container">
+        <h2>Active Sessions (<%= sessions.length %>)</h2>
+
+        <% if (sessions.length === 0) { %>
+            <div class="empty-state">
+                <p>No active sessions found.</p>
+            </div>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>User ID</th>
+                        <th>User Info</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% sessions.forEach(session => { %>
+                        <%
+                            let displayUserId = 'Unknown';
+                            let displayInfo = 'No user data';
+                            let isAdmin = false;
+
+                            if (session.userId) {
+                                if (typeof session.userId === 'string' && session.userId.startsWith('{')) {
+                                    try {
+                                        const userInfo = JSON.parse(session.userId);
+                                        displayUserId = userInfo.id || 'Unknown';
+                                        displayInfo = `${userInfo.name || 'Unknown'} (${userInfo.email || 'Unknown'})`;
+                                        isAdmin = userInfo.role === 'admin';
+                                    } catch (e) {
+                                        displayUserId = 'Parse Error';
+                                        displayInfo = 'Error reading user data';
+                                    }
+                                } else {
+                                    displayUserId = session.userId;
+                                    displayInfo = `User ID: ${session.userId}`;
+                                }
+                            }
+                        %>
+                        <tr>
+                            <td style="font-family: monospace; font-size: 12px;"><%= session.sessionId.substring(0, 20) %>...</td>
+                            <td><%= displayUserId %></td>
+                            <td>
+                                <%= displayInfo %>
+                                <% if (isAdmin) { %>
+                                    <span class="user-badge admin-badge">ADMIN</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <form method="POST" action="/admin/revoke/<%= session.sessionId %>" style="display: inline;">
+                                    <button type="submit" class="revoke-btn"
+                                            onclick="return confirm('Are you sure you want to revoke this session? The user will be logged out immediately.')">
+                                        Revoke Session
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<h1 class="mt-4">Dashboard</h1>
+<p class="lead mb-3">Welcome <%= user.name %></p>
+
+<% if (user.role === 'admin') { %>
+  <div style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+    <strong>🔐 Admin Access:</strong>
+    <a href="/admin" style="color: #007bff; text-decoration: none; font-weight: bold;">Go to Admin Dashboard</a>
+  </div>
+<% } %>
+
+<a href="/auth/logout" class="btn btn-secondary">Logout</a>
