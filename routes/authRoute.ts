@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/login", forwardAuthenticated, (req, res) => {
   const messages = req.session.messages || [];
-  // clears msg from session
+  // clears msg from session after reading it. so it can display once only
   req.session.messages = [];
   res.render("login", { messages });
 });
