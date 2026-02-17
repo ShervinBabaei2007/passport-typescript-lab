@@ -1,8 +1,6 @@
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { PassportStrategy } from "../../interfaces/index";
 
-console.log("GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID);
-
 const githubStrategy = new GitHubStrategy(
   {
     clientID: process.env.GITHUB_CLIENT_ID || "",
@@ -16,6 +14,7 @@ const githubStrategy = new GitHubStrategy(
       name: profile.displayName || profile.username || "GitHub User",
       email: profile.emails?.[0]?.value || "",
       password: "",
+      role: "user" as const,
     };
     return done(null, user);
   }
