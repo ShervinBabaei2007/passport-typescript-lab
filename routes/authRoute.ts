@@ -5,9 +5,9 @@ import { forwardAuthenticated } from "../middleware/checkAuth";
 const router = express.Router();
 
 router.get("/login", forwardAuthenticated, (req, res) => {
-  const messages = (req.session as any).messages || [];
-  // Clearing messages after reading them
-  (req.session as any).messages = [];
+  const messages = req.session.messages || [];
+  // clears msg from session
+  req.session.messages = [];
   res.render("login", { messages });
 });
 
