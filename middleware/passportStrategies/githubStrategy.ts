@@ -1,6 +1,8 @@
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { PassportStrategy } from "../../interfaces/index";
-import { database } from "../../models/userModel";
+import { database, User } from "../../models/userModel";
+
+console.log("GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID);
 
 const githubStrategy = new GitHubStrategy(
   {
@@ -9,23 +11,20 @@ const githubStrategy = new GitHubStrategy(
     callbackURL: "http://localhost:8000/auth/github/callback",
   },
   function (accessToken: any, refreshToken: any, profile: any, done: any) {
-    let user = database.find((user) => user.id === Number(profile.id)) || null;
-
-    if (!user) {
-      console.log("New GitHub user - creating...");
-      user = {
-        id: Number(profile.id),
+    const foundUser = database.find((user) => user.id === profile.id);
+    if (foundUser) {
+      done(null, foundUser);
+    } else {
+      const user: User = {
+        id: parseInt(profile.id),
         name: profile.displayName || profile.username || "GitHub User",
         email: profile.emails?.[0]?.value || "",
         password: "",
-        role: "user" as const,
+        role: "user",
       };
       database.push(user);
-    } else {
-      console.log("Existing GitHub user found:", user.name);
+      return done(null, user);
     }
-
-    done(null, user);
   }
 );
 

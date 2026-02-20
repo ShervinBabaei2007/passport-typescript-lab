@@ -1,27 +1,16 @@
 import express from "express";
 import { ensureAuthenticated } from "../middleware/checkAuth";
 import { ensureAdmin } from "../middleware/checkRoles";
-import { sessionStore } from "../app";
+// import { sessionStore } from "../app";
 
 const router = express.Router();
 
 // Admin dashboard - shows all active sessions
 router.get("/", ensureAuthenticated, ensureAdmin, (req, res) => {
-  // Get all sessions from MemoryStore
-  const sessions = (sessionStore as any).sessions || {};
+  const sessions = (req.sessionStore as any).sessions || {};
 
   const sessionList = Object.keys(sessions).map((sessionId) => {
-    let sessionData;
-    try {
-      // MemoryStore stores sessions as JSON strings
-      sessionData =
-        typeof sessions[sessionId] === "string"
-          ? JSON.parse(sessions[sessionId])
-          : sessions[sessionId];
-    } catch (e) {
-      sessionData = sessions[sessionId];
-    }
-
+    const sessionData = sessions[sessionId];
     const userId = sessionData?.passport?.user;
 
     return {
@@ -41,7 +30,7 @@ router.get("/", ensureAuthenticated, ensureAdmin, (req, res) => {
 router.post("/revoke/:sessionId", ensureAuthenticated, ensureAdmin, (req, res) => {
   const sessionId = req.params.sessionId;
 
-  sessionStore.destroy(sessionId, (err: any) => {
+  req.sessionStore.destroy(sessionId, (err: any) => {
     if (err) {
       console.error("Error destroying session:", err);
       return res.status(500).json({ success: false, message: "Error revoking session" });

@@ -1,7 +1,7 @@
 import { database } from "../../models/userModel";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { getUserById } from "../../controllers/userController";
+import { getUserByEmailIdAndPassword, getUserById } from "../../controllers/userController";
 import { PassportStrategy } from "../../interfaces/index";
 
 const localStrategy = new LocalStrategy(
@@ -32,28 +32,16 @@ const localStrategy = new LocalStrategy(
 );
 
 passport.serializeUser(function (user: any, done: (err: any, id?: unknown) => void) {
-  // Store the entire user object for OAuth users
-  if (user.password === "") {
-    done(null, JSON.stringify(user)); // GitHub user - storing full object
-  } else {
-    done(null, user.id); // Local user - storing just ID
-  }
+  done(null, user.id);
 });
 
 passport.deserializeUser(function (
-  data: any,
+  userId: any,
   done: (err: any, user?: Express.User | false | null) => void
 ) {
-  // Check if it's a JSON string (GitHub user) or just an ID (local user)
-  if (typeof data === "string" && data.startsWith("{")) {
-    done(null, JSON.parse(data));
-  } else {
-    try {
-      done(null, getUserById(data));
-    } catch {
-      done(null, false);
-    }
-  }
+  const foundUser = getUserById(userId);
+  if (foundUser) return done(null, foundUser);
+  done(null, false);
 });
 
 const passportLocalStrategy: PassportStrategy = {

@@ -5,13 +5,13 @@ import session from "express-session";
 import path from "path";
 import passportMiddleware from "./middleware/passportMiddleware";
 
-const port = process.env.Port || 8000;
+const port = process.env.port || 8000;
 
 const app = express();
 
 // in-memory session store
-const sessionStore = new session.MemoryStore();
-export { sessionStore };
+// const sessionStore = new session.MemoryStore();
+// export { sessionStore };
 
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
@@ -20,7 +20,7 @@ app.use(
     secret: "secret",
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
+    // store: sessionStore,
     cookie: {
       httpOnly: true,
       secure: false,
